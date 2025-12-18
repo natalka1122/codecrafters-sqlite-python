@@ -1,6 +1,7 @@
 import argparse
 import sys
 
+from app.database import Database
 from app.logging_config import get_logger, setup_logging
 
 setup_logging(level="DEBUG", console_logs_target=sys.stderr)
@@ -19,14 +20,15 @@ def parse_args() -> argparse.Namespace:  # noqa: WPS213
 
 def main() -> None:
     args = parse_args()
-    sql = args.command
-    if sql == ".dbinfo":
-        with open(args.db_file, "rb") as database_file:
-            database_file.seek(16)
-            page_size = int.from_bytes(database_file.read(2), byteorder="big")
-            sys.stdout.write(f"database page size: {page_size}\n")
-    else:
-        sys.stderr.write(f"Invalid command: {sql}")
+    command = args.command
+
+    with open(args.db_file, "rb") as file:
+        db = Database(file)
+        if command == ".dbinfo":
+            sys.stdout.write(f"database page size: {db.page_size}\n")
+            sys.stdout.write(f"number of tables: {db.table_count}\n")
+        else:
+            sys.stderr.write(f"Invalid command: {command}\n")
 
 
 if __name__ == "__main__":
