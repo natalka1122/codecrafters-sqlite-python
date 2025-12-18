@@ -27,6 +27,9 @@ def main() -> None:
         if command == ".dbinfo":
             sys.stdout.write(f"database page size: {db.page_size}\n")
             sys.stdout.write(f"number of tables: {db.table_count}\n")
+        elif command == ".tables":
+            result = " ".join(map(lambda x: x.decode(), db.tables))
+            sys.stdout.write(f"{result}\n")
         else:
             sys.stderr.write(f"Invalid command: {command}\n")
 
