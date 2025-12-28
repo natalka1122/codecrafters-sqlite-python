@@ -2,7 +2,9 @@ import argparse
 import sys
 
 from app.database import Database
+from app.exec import sql_exec
 from app.logging_config import get_logger, setup_logging
+from app.statement import Statement
 
 setup_logging(level="DEBUG", console_logs_target=sys.stderr)
 
@@ -20,18 +22,11 @@ def parse_args() -> argparse.Namespace:  # noqa: WPS213
 
 def main() -> None:
     args = parse_args()
-    command = args.command
-
+    command = Statement(args.command)
     with open(args.db_file, "rb") as file:
         db = Database(file)
-        if command == ".dbinfo":
-            sys.stdout.write(f"database page size: {db.page_size}\n")
-            sys.stdout.write(f"number of tables: {db.table_count}\n")
-        elif command == ".tables":
-            result = " ".join(map(lambda x: x.decode(), db.tables))
-            sys.stdout.write(f"{result}\n")
-        else:
-            sys.stderr.write(f"Invalid command: {command}\n")
+        for line in sql_exec(command, db):
+            sys.stdout.write(f"{line}\n")
 
 
 if __name__ == "__main__":
